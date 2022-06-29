@@ -10,8 +10,13 @@ namespace LocationPlotter
 {
     public partial class Form1 : Form
     {
-        List<InterestingPlace> interestingPlaces;
+        List<InterestingPlace> places;
         GMapOverlay markers;
+        public string json = string.Empty;
+        PeriodicTimer timer;
+
+       
+        
         public Form1()
         {
             InitializeComponent();
@@ -19,9 +24,17 @@ namespace LocationPlotter
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            
-
-            
+            timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+            while(await timer.WaitForNextTickAsync())
+            {
+                var newplaces = await GetPlacesOfInterest();
+                if (places == newplaces) continue;
+                else
+                {
+                    places = newplaces;
+                    RefreshMarkers();
+                }
+            }
 
         }
 
@@ -40,7 +53,7 @@ namespace LocationPlotter
             //myMap.Bearing = 180; //Flip the map upside down
 
             // Drawing Markers
-            var placesOfInterest = await GetPlacesOfInterest();
+            places = await GetPlacesOfInterest();
             //MessageBox.Show(placesOfInterest.Count.ToString());
 
             markers = new GMapOverlay("markers");
@@ -52,11 +65,13 @@ namespace LocationPlotter
         private async Task<List<InterestingPlace>> GetPlacesOfInterest(int minid = 0, int maxid = 0, int limit = 0)
         {
             string url = @"http://developer.kensnz.com/getlocdata";
-            string json = string.Empty;
+            string newjson = string.Empty;
             using (HttpClient client = new HttpClient())
             {
-                json = await client.GetStringAsync(url);
+                newjson = await client.GetStringAsync(url);
             }
+            if (json.Length == newjson.Length) return places; // if no change, dont reprocess
+            json = newjson;
             JArray jerry = JArray.Parse(json);
             var interestingPlaces = jerry.Select(p => new InterestingPlace
             {
@@ -72,7 +87,7 @@ namespace LocationPlotter
         }
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            
         }
 
         private async void refreshMarkersToolStripMenuItem_Click(object sender, EventArgs e)
@@ -102,6 +117,12 @@ namespace LocationPlotter
     }
     public class InterestingPlace
     {
+        // Filter Arguments for places list
+        public static int IDStart = 0, IDFinish = int.MaxValue, IDLimitResults = int.MaxValue;
+        public static string[]? UserIDFilter;
+        public static double LatStart = 0, LatFinish = double.MaxValue, LatLimitResults = double.MaxValue;
+        public static double LongStart = 0, LongFinish = double.MaxValue, LongLimitResults = double.MaxValue;
+        public static DateTime CreatedStart = DateTime.MinValue, CreatedFinish = DateTime.Now; 
         public int ID { get; set; }
         public string UserID { get; set; } = string.Empty;
         public double Latitude { get; set; }
