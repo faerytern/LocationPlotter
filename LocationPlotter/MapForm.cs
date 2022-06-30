@@ -44,7 +44,7 @@ namespace LocationPlotter
         {
             var lat = myMap.FromLocalToLatLng(e.X, e.Y).Lat;
             var lng = myMap.FromLocalToLatLng(e.X, e.Y).Lng;
-            Text = title + $"Lat: {lat:F15} Long: {lng:F15}";
+            Text = title + $" Lat: {lat:F15} Long: {lng:F15}";
         }
 
 
