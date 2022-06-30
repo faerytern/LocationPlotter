@@ -12,12 +12,18 @@ namespace LocationPlotter
 {
     public partial class FilterForm : Form
     {
-        public FilterForm(MapForm parent, InterestingPlaceOptions options, DataTable table)
+        public InterestingPlaceOptions options;
+        public FilterForm(MapForm parent)
         {
             InitializeComponent();
             Tag = parent;
 
-            dataGridView1.DataSource = table;
+            dataGridView1.DataSource = parent.table;
+            this.options = parent.options;
+            propertyGrid1.SelectedObject = options;
+        }
+        public void RefreshPropertyGrid()
+        {
             propertyGrid1.SelectedObject = options;
         }
         

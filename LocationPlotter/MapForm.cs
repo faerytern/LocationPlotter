@@ -4,9 +4,6 @@ using Newtonsoft.Json.Linq; // get objects from json
 using GMap.NET;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
-using System.Windows.Forms;
-using System.Configuration;
-using System.Collections.Specialized;
 namespace LocationPlotter
 {
     public partial class MapForm : Form
@@ -20,9 +17,9 @@ namespace LocationPlotter
         PeriodicTimer timer;
         FilterForm FilterForm;
         // Filter Arguments for places list
-        InterestingPlaceOptions options = new();
+        public InterestingPlaceOptions options = new();
         private bool doRepeat;
-        System.Data.DataTable table = new System.Data.DataTable();
+        public System.Data.DataTable table = new System.Data.DataTable();
         double currentLongitude;
         double currentLatitude;
         public MapForm()
@@ -132,7 +129,7 @@ namespace LocationPlotter
 
         private void filterMarkersOnToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (FilterForm == null||FilterForm.IsDisposed) FilterForm = new FilterForm(parent: this, options: options, table);
+            if (FilterForm == null||FilterForm.IsDisposed) FilterForm = new FilterForm(this);
             FilterForm.Show();
         }
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -155,11 +152,16 @@ namespace LocationPlotter
             table.Rows.Clear();
             CustomPlaces = (from place in places
                             where place.ID >= options.IDMin && place.ID <= options.IDMax &&
-                            place.Created_At >= options.CreatedMin && place.Created_At <= options.CreatedMax
+                            place.Created_At >= options.CreatedMin && place.Created_At <= options.CreatedMax &&
+                            place.Latitude >= options.LatMin && place.Latitude <= options.LatMax &&
+                            place.Longitude >= options.LongMin && place.Longitude <= options.LongMax
+
                             select place).OrderByDescending(p=>p.Created_At).ToList();
+            if (options.LimitResults > 0) CustomPlaces = CustomPlaces.Take(options.LimitResults).ToList();
+            if (options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
+            if (options.UniqueResults) CustomPlaces = CustomPlaces.Distinct().ToList();
             RefreshTable(CustomPlaces);
 
-            if (options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
             foreach (var place in CustomPlaces)
             {
                 var marker = new GMarkerGoogle(
@@ -197,16 +199,28 @@ namespace LocationPlotter
         }
 
 
-        private void centerOnInvercargillToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            myMap.SetPositionByKeywords("Invercargill, Southland, New Zealand");
-            myMap.Zoom = 13;
-
-        }
 
         private void copyLocationToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Clipboard.SetText($"{currentLatitude:F10}, {currentLongitude:F10}");
+        }
+
+        private void resetToStandardZoomToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            myMap.Zoom = 13;
+        }
+
+        private void ResetToDefaultViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            myMap.SetPositionByKeywords("Invercargill, Southland, New Zealand");
+            myMap.Zoom = 13;
+        }
+
+        private void resetSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            options = new InterestingPlaceOptions();
+            if (FilterForm != null && !FilterForm.IsDisposed) { FilterForm.options = options; FilterForm.RefreshPropertyGrid(); }
+            RefreshMarkers();
         }
     }
     public class InterestingPlace
@@ -220,7 +234,17 @@ namespace LocationPlotter
         public DateTime Updated_At { get; set; }
         public override string ToString()
         {
-            return $"Mark {ID} from Student {UserID}\nCreated on {Created_At.ToString("g")}\n{Description}";
+            return $"\nMark {ID} from Student {UserID}\nCreated on {Created_At.ToString("g")}\n{Description}";
+        }
+        public override bool Equals(object? obj)
+        {
+            if (obj is not null && obj is InterestingPlace place)
+            {
+                return UserID == place.UserID
+                    && Latitude == place.Latitude
+                    && Longitude == place.Longitude;
+            }
+            else return false;
         }
     }
     public class InterestingPlaceOptions
@@ -237,5 +261,6 @@ namespace LocationPlotter
 
         public DateTime CreatedMin { get; set; } = DateTime.Today.AddMonths(-14);
         public DateTime CreatedMax { get; set; } = DateTime.Today.AddDays(2);
+        public bool UniqueResults { get; set; } = true;
     }
 }
