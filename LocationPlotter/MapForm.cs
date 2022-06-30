@@ -20,6 +20,7 @@ namespace LocationPlotter
         // Filter Arguments for places list
         InterestingPlaceOptions options = new();
         private bool doRepeat;
+        System.Data.DataTable table = new System.Data.DataTable();
         public MapForm()
         {
             InitializeComponent();
@@ -30,11 +31,24 @@ namespace LocationPlotter
         private async void Form1_Load(object sender, EventArgs e)
         {
             options = new InterestingPlaceOptions();
-            Task.Run(() => Repeater());
+            SetUpTable();
+
+
+            await Task.Run(() => Repeater());
 
 
         }
 
+        private void SetUpTable()
+        {
+            table.Columns.Add("ID", typeof(int));
+            table.Columns.Add("UserID", typeof(string));
+            table.Columns.Add("Latitude", typeof(double));
+            table.Columns.Add("Longitude", typeof(double));
+            table.Columns.Add("Description", typeof(string));
+            table.Columns.Add("Created_At", typeof(DateTime));
+            table.Columns.Add("Updated_At", typeof(DateTime));
+        }
 
         private async void myMap_Load(object sender, EventArgs e)
         {
@@ -50,9 +64,6 @@ namespace LocationPlotter
             //myMap.Bearing = 180; //Flip the map upside down
 
             // Drawing Markers
-            places = await GetPlacesOfInterest();
-            //options.UserFilter = (from place in places select place.UserID).Distinct().OrderBy(name=>int.Parse(name)).ToList();
-            //MessageBox.Show(placesOfInterest.Count.ToString());
 
             markers = new GMapOverlay("markers");
             myMap.Overlays.Add(markers);
@@ -64,10 +75,14 @@ namespace LocationPlotter
         {
             string url = @"http://developer.kensnz.com/getlocdata";
             string newjson = string.Empty;
-            using (HttpClient client = new HttpClient())
+            while (newjson == null || newjson == string.Empty)
             {
-                newjson = await client.GetStringAsync(url);
+                using (HttpClient client = new HttpClient())
+                {
+                    newjson = await client.GetStringAsync(url);
+                }
             }
+
             if (json.Length == newjson.Length) return places; // if no change, dont reprocess
             json = newjson;
             JArray jerry = JArray.Parse(json);
@@ -81,6 +96,7 @@ namespace LocationPlotter
                 Created_At = (DateTime)p["created_at"],
                 Updated_At = (DateTime)p["updated_at"]
             }).ToList();
+
             return interestingPlaces;
         }
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
@@ -105,7 +121,7 @@ namespace LocationPlotter
 
         private void filterMarkersOnToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (FilterForm == null) FilterForm = new FilterForm(parent: this, options: options);
+            if (FilterForm == null) FilterForm = new FilterForm(parent: this, options: options, table);
             FilterForm.Show();
         }
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -125,13 +141,14 @@ namespace LocationPlotter
         {
             markers.Markers.Clear();
             places = await GetPlacesOfInterest();
-            
+            table.Rows.Clear();
             CustomPlaces = (from place in places
-                                  where place.ID >= options.IDMin && place.ID <= options.IDMax &&
-                                  place.Created_At >= options.CreatedMin && place.Created_At <= options.CreatedMax
-                                  select place).ToList();
-            if(options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
-            Console.WriteLine("inspect");
+                            where place.ID >= options.IDMin && place.ID <= options.IDMax &&
+                            place.Created_At >= options.CreatedMin && place.Created_At <= options.CreatedMax
+                            select place).ToList();
+            RefreshTable(CustomPlaces);
+
+            if (options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
             foreach (var place in CustomPlaces)
             {
                 var marker = new GMarkerGoogle(
@@ -142,6 +159,13 @@ namespace LocationPlotter
                     Tag = place
                 };
                 markers.Markers.Add(marker);
+            }
+        }
+        private void RefreshTable(List<InterestingPlace> interestingPlaces)
+        {
+            foreach (var p in interestingPlaces)
+            {
+                table.Rows.Add(p.ID, p.UserID, p.Latitude, p.Longitude, p.Description, p.Created_At, p.Updated_At);
             }
         }
         private async void Repeater()
@@ -155,10 +179,12 @@ namespace LocationPlotter
                 else
                 {
                     places = newplaces;
+                    
                     RefreshMarkers();
                 }
             }
         }
+
 
         private void centerOnInvercargillToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -193,6 +219,6 @@ namespace LocationPlotter
         public double LongMax { get; set; } = 180;
 
         public DateTime CreatedMin { get; set; } = DateTime.Today.AddMonths(-14);
-        public DateTime CreatedMax { get; set; } = DateTime.MaxValue;
+        public DateTime CreatedMax { get; set; } = DateTime.Today.AddDays(2);
     }
 }
