@@ -146,6 +146,7 @@
             this.Controls.Add(this.propertyGrid1);
             this.Name = "FilterForm";
             this.Text = "FilterForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FilterForm_FormClosing);
             this.Load += new System.EventHandler(this.FilterForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.interestingPlaceBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();

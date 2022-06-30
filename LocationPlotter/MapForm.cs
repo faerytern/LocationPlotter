@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq; // get objects from json
 using GMap.NET;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
-
+using System.Windows.Forms;
 
 namespace LocationPlotter
 {
@@ -22,6 +22,8 @@ namespace LocationPlotter
         InterestingPlaceOptions options = new();
         private bool doRepeat;
         System.Data.DataTable table = new System.Data.DataTable();
+        double currentLongitude;
+        double currentLatitude;
         public MapForm()
         {
             InitializeComponent();
@@ -42,9 +44,9 @@ namespace LocationPlotter
 
         private void MyMap_MouseMove(object? sender, MouseEventArgs e)
         {
-            var lat = myMap.FromLocalToLatLng(e.X, e.Y).Lat;
-            var lng = myMap.FromLocalToLatLng(e.X, e.Y).Lng;
-            Text = title + $" Lat: {lat:F15} Long: {lng:F15}";
+            currentLatitude = myMap.FromLocalToLatLng(e.X, e.Y).Lat;
+            currentLongitude = myMap.FromLocalToLatLng(e.X, e.Y).Lng;
+            Text = title + $" Lat: {currentLatitude:F15} Long: {currentLongitude:F15}";
         }
 
 
@@ -130,7 +132,7 @@ namespace LocationPlotter
 
         private void filterMarkersOnToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (FilterForm == null) FilterForm = new FilterForm(parent: this, options: options, table);
+            if (FilterForm == null||FilterForm.IsDisposed) FilterForm = new FilterForm(parent: this, options: options, table);
             FilterForm.Show();
         }
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -154,7 +156,7 @@ namespace LocationPlotter
             CustomPlaces = (from place in places
                             where place.ID >= options.IDMin && place.ID <= options.IDMax &&
                             place.Created_At >= options.CreatedMin && place.Created_At <= options.CreatedMax
-                            select place).ToList();
+                            select place).OrderByDescending(p=>p.Created_At).ToList();
             RefreshTable(CustomPlaces);
 
             if (options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
@@ -200,6 +202,11 @@ namespace LocationPlotter
             myMap.SetPositionByKeywords("Invercargill, Southland, New Zealand");
             myMap.Zoom = 13;
 
+        }
+
+        private void copyLocationToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText($"{currentLatitude:F10}, {currentLongitude:F10}");
         }
     }
     public class InterestingPlace

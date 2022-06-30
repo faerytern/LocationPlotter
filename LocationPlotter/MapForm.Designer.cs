@@ -39,6 +39,7 @@
             this.resetToStandardZoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.refreshMarkersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyLocationToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,25 +74,26 @@
             // contextMenuStrip
             // 
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.helpToolStripMenuItem,
+            this.copyLocationToClipboardToolStripMenuItem,
             this.filterMarkersOnToolStripMenuItem,
             this.quickCommandsToolStripMenuItem,
             this.refreshMarkersToolStripMenuItem,
+            this.helpToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip1";
-            this.contextMenuStrip.Size = new System.Drawing.Size(171, 114);
+            this.contextMenuStrip.Size = new System.Drawing.Size(221, 158);
             // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
             // filterMarkersOnToolStripMenuItem
             // 
             this.filterMarkersOnToolStripMenuItem.Name = "filterMarkersOnToolStripMenuItem";
-            this.filterMarkersOnToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.filterMarkersOnToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.filterMarkersOnToolStripMenuItem.Text = "Filter Markers";
             this.filterMarkersOnToolStripMenuItem.Click += new System.EventHandler(this.filterMarkersOnToolStripMenuItem_Click);
             // 
@@ -102,7 +104,7 @@
             this.centerOnInvercargillToolStripMenuItem,
             this.resetToStandardZoomToolStripMenuItem});
             this.quickCommandsToolStripMenuItem.Name = "quickCommandsToolStripMenuItem";
-            this.quickCommandsToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.quickCommandsToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.quickCommandsToolStripMenuItem.Text = "Quick Commands";
             // 
             // goToDefaultViewToolStripMenuItem
@@ -127,25 +129,32 @@
             // refreshMarkersToolStripMenuItem
             // 
             this.refreshMarkersToolStripMenuItem.Name = "refreshMarkersToolStripMenuItem";
-            this.refreshMarkersToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.refreshMarkersToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.refreshMarkersToolStripMenuItem.Text = "Refresh Markers";
             this.refreshMarkersToolStripMenuItem.Click += new System.EventHandler(this.refreshMarkersToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
-            // Form1
+            // copyLocationToClipboardToolStripMenuItem
+            // 
+            this.copyLocationToClipboardToolStripMenuItem.Name = "copyLocationToClipboardToolStripMenuItem";
+            this.copyLocationToClipboardToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            this.copyLocationToClipboardToolStripMenuItem.Text = "Copy Location to Clipboard";
+            this.copyLocationToClipboardToolStripMenuItem.Click += new System.EventHandler(this.copyLocationToClipboardToolStripMenuItem_Click);
+            // 
+            // MapForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.myMap);
             this.HelpButton = true;
-            this.Name = "Form1";
+            this.Name = "MapForm";
             this.Text = "Map Plotter";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.contextMenuStrip.ResumeLayout(false);
@@ -165,5 +174,6 @@
         private ToolStripMenuItem centerOnInvercargillToolStripMenuItem;
         private ToolStripMenuItem resetToStandardZoomToolStripMenuItem;
         private ToolStripMenuItem aboutToolStripMenuItem;
+        private ToolStripMenuItem copyLocationToClipboardToolStripMenuItem;
     }
 }

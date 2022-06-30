@@ -45,5 +45,18 @@ namespace LocationPlotter
         {
             
         }
+
+        private void FilterForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if(e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                Hide();
+            }
+            else
+            {
+                e.Cancel = false;
+            }
+        }
     }
 }
