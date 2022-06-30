@@ -10,35 +10,32 @@ namespace LocationPlotter
 {
     public partial class Form1 : Form
     {
-        List<InterestingPlace> places;
+        public List<InterestingPlace> places;
+        public List<InterestingPlace> CustomPlaces;
         GMapOverlay markers;
+        GMapOverlay polygons;
         public string json = string.Empty;
         PeriodicTimer timer;
-
-       
-        
+        FilterForm FilterForm;
+        // Filter Arguments for places list
+        InterestingPlaceOptions options = new();
+        private bool doRepeat;
         public Form1()
         {
             InitializeComponent();
         }
 
+
+
         private async void Form1_Load(object sender, EventArgs e)
         {
-            timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
-            while(await timer.WaitForNextTickAsync())
-            {
-                var newplaces = await GetPlacesOfInterest();
-                if (places == newplaces) continue;
-                else
-                {
-                    places = newplaces;
-                    RefreshMarkers();
-                }
-            }
+            options = new InterestingPlaceOptions();
+            Task.Run(() => Repeater());
+
 
         }
 
-        
+
         private async void myMap_Load(object sender, EventArgs e)
         {
             //Initial Setup
@@ -54,6 +51,7 @@ namespace LocationPlotter
 
             // Drawing Markers
             places = await GetPlacesOfInterest();
+            options.UserFilter = (from place in places select place.UserID).Distinct().OrderBy(name=>int.Parse(name)).ToList();
             //MessageBox.Show(placesOfInterest.Count.ToString());
 
             markers = new GMapOverlay("markers");
@@ -87,7 +85,17 @@ namespace LocationPlotter
         }
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
+
+            MessageBox.Show(owner: this,
+                caption: "Help for Map Plotter 1.0",
+                text: "IT722 Project 2022\n" +
+                "Author: Kara Heffernan, 2016012187\n" +
+                "Purpose\n" +
+                "To map coordinates from multiple people sourced from a web server, draw convex hulls.\n" +
+                "Actions and filtering are done through the right-click context menu anywhere on the form.\n",
+                icon: MessageBoxIcon.Question,
+                buttons: MessageBoxButtons.OK
+                );
         }
 
         private async void refreshMarkersToolStripMenuItem_Click(object sender, EventArgs e)
@@ -97,12 +105,34 @@ namespace LocationPlotter
 
         private void filterMarkersOnToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FilterForm = new FilterForm(places: CustomPlaces, parent: this, options: options);
+            FilterForm.Show();
         }
-        private async void RefreshMarkers(int filter1 = 0, int filter2 = 0)
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(owner: this,
+                caption: "About Map Plotter 1.0",
+                text: "IT722 Project 2022\n" +
+                "Author: Kara Heffernan, 2016012187\n" +
+                "Purpose\n" +
+                "To map coordinates from multiple people sourced from a web server, draw convex hulls.\n" +
+                "Actions and filtering are done through the right-click context menu anywhere on the form.\n",
+                icon: MessageBoxIcon.Question,
+                buttons: MessageBoxButtons.OK
+                );
+        }
+        public async void RefreshMarkers()
         {
             markers.Clear();
-            foreach (var place in await GetPlacesOfInterest())
+            places = await GetPlacesOfInterest();
+            
+            CustomPlaces = (from place in places
+                                  where place.ID >= options.IDMin && place.ID <= options.IDMax &&
+                                  place.Created_At >= options.CreatedMin && place.Created_At <= options.CreatedMax
+                                  select place).ToList();
+            if(options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
+
+            foreach (var place in CustomPlaces)
             {
                 var marker = new GMarkerGoogle(
                     new PointLatLng(place.Latitude, place.Longitude),
@@ -114,15 +144,31 @@ namespace LocationPlotter
                 markers.Markers.Add(marker);
             }
         }
+        private async void Repeater()
+        {
+            timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+            while (await timer.WaitForNextTickAsync())
+            {
+                if (!doRepeat) continue;
+                var newplaces = await GetPlacesOfInterest();
+                if (places == newplaces) continue;
+                else
+                {
+                    places = newplaces;
+                    RefreshMarkers();
+                }
+            }
+        }
+
+        private void centerOnInvercargillToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            myMap.SetPositionByKeywords("Invercargill, Southland, New Zealand");
+            myMap.Zoom = 13;
+
+        }
     }
     public class InterestingPlace
     {
-        // Filter Arguments for places list
-        public static int IDStart = 0, IDFinish = int.MaxValue, IDLimitResults = int.MaxValue;
-        public static string[]? UserIDFilter;
-        public static double LatStart = 0, LatFinish = double.MaxValue, LatLimitResults = double.MaxValue;
-        public static double LongStart = 0, LongFinish = double.MaxValue, LongLimitResults = double.MaxValue;
-        public static DateTime CreatedStart = DateTime.MinValue, CreatedFinish = DateTime.Now; 
         public int ID { get; set; }
         public string UserID { get; set; } = string.Empty;
         public double Latitude { get; set; }
@@ -134,5 +180,19 @@ namespace LocationPlotter
         {
             return $"Mark {ID} from Student {UserID}\nCreated on {Created_At.ToString("g")}\n{Description}";
         }
+    }
+    public class InterestingPlaceOptions
+    {
+        public int LimitResults { get; set; }
+        public int IDMin { get; set; }
+        public int IDMax { get; set; } = int.MaxValue;
+        public List<string> UserFilter { get; set; } = new List<string>();
+        public double LatMin { get; set; } = -90;
+        public double LatMax { get; set; } = 90;
+        public double LongMin { get; set; } = -180;
+        public double LongMax { get; set; } = 180;
+
+        public DateTime CreatedMin { get; set; } = DateTime.Today.AddMonths(-14);
+        public DateTime CreatedMax { get; set; } = DateTime.MaxValue;
     }
 }
