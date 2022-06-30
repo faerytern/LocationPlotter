@@ -5,7 +5,8 @@ using GMap.NET;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
 using System.Windows.Forms;
-
+using System.Configuration;
+using System.Collections.Specialized;
 namespace LocationPlotter
 {
     public partial class MapForm : Form
@@ -33,7 +34,6 @@ namespace LocationPlotter
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            options = new InterestingPlaceOptions();
             SetUpTable();
 
 
@@ -225,6 +225,7 @@ namespace LocationPlotter
     }
     public class InterestingPlaceOptions
     {
+        
         public int LimitResults { get; set; }
         public int IDMin { get; set; }
         public int IDMax { get; set; } = int.MaxValue;

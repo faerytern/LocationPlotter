@@ -49,10 +49,14 @@
             // 
             // propertyGrid1
             // 
+            this.propertyGrid1.AccessibleDescription = "Configure Plotter Settings";
+            this.propertyGrid1.AccessibleName = "Settings Menu";
+            this.propertyGrid1.CanShowVisualStyleGlyphs = false;
             this.propertyGrid1.Dock = System.Windows.Forms.DockStyle.Left;
             this.propertyGrid1.HelpVisible = false;
             this.propertyGrid1.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid1.Name = "propertyGrid1";
+            this.propertyGrid1.PropertySort = System.Windows.Forms.PropertySort.Categorized;
             this.propertyGrid1.Size = new System.Drawing.Size(260, 450);
             this.propertyGrid1.TabIndex = 0;
             this.propertyGrid1.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid1_PropertyValueChanged);
