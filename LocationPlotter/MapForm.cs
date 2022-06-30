@@ -10,6 +10,7 @@ namespace LocationPlotter
 {
     public partial class MapForm : Form
     {
+        public string title = "Map Plotter";
         public List<InterestingPlace> places;
         public List<InterestingPlace> CustomPlaces;
         GMapOverlay markers;
@@ -35,9 +36,17 @@ namespace LocationPlotter
 
 
             await Task.Run(() => Repeater());
-
+            myMap.MouseMove += MyMap_MouseMove;
 
         }
+
+        private void MyMap_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var lat = myMap.FromLocalToLatLng(e.X, e.Y).Lat;
+            var lng = myMap.FromLocalToLatLng(e.X, e.Y).Lng;
+            Text = title + $"Lat: {lat:F15} Long: {lng:F15}";
+        }
+
 
         private void SetUpTable()
         {
