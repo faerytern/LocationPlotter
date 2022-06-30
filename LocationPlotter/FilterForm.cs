@@ -13,9 +13,12 @@ namespace LocationPlotter
     public partial class FilterForm : Form
     {
         private DataTable table = new DataTable();
-        public FilterForm(List<InterestingPlace> places, Form1 parent, InterestingPlaceOptions options)
+        public FilterForm(MapForm parent, InterestingPlaceOptions options)
         {
             InitializeComponent();
+            Tag = parent;
+
+
             table.Columns.Add("ID", typeof(int));
             table.Columns.Add("UserID", typeof(string));
             table.Columns.Add("Latitude", typeof(double));
@@ -28,13 +31,12 @@ namespace LocationPlotter
 
 
             dataGridView1.DataSource = table;
-            Tag = parent;
             propertyGrid1.SelectedObject = options;
         }
         private void RefreshTable()
         {
             table.Rows.Clear();
-            foreach (var p in (Tag as Form1).CustomPlaces)
+            foreach (var p in (Tag as MapForm).CustomPlaces)
             {
                 table.Rows.Add(p.ID, p.UserID, p.Latitude, p.Longitude, p.Description, p.Created_At, p.Updated_At);
             }
@@ -51,7 +53,7 @@ namespace LocationPlotter
 
         private void propertyGrid1_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
-            if (Tag is Form1 parent)
+            if (Tag is MapForm parent)
             {
                 parent.RefreshMarkers();
 
@@ -59,6 +61,11 @@ namespace LocationPlotter
         }
 
         private void dataGridView1_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void dataGridView1_DoubleClick(object sender, EventArgs e)
         {
             RefreshTable();
         }

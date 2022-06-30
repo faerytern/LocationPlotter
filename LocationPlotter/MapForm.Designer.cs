@@ -1,6 +1,6 @@
 ﻿namespace LocationPlotter
 {
-    partial class Form1
+    partial class MapForm
     {
         /// <summary>
         ///  Required designer variable.

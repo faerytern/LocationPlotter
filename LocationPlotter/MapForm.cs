@@ -8,7 +8,7 @@ using GMap.NET.WindowsForms.Markers;
 
 namespace LocationPlotter
 {
-    public partial class Form1 : Form
+    public partial class MapForm : Form
     {
         public List<InterestingPlace> places;
         public List<InterestingPlace> CustomPlaces;
@@ -20,7 +20,7 @@ namespace LocationPlotter
         // Filter Arguments for places list
         InterestingPlaceOptions options = new();
         private bool doRepeat;
-        public Form1()
+        public MapForm()
         {
             InitializeComponent();
         }
@@ -51,7 +51,7 @@ namespace LocationPlotter
 
             // Drawing Markers
             places = await GetPlacesOfInterest();
-            options.UserFilter = (from place in places select place.UserID).Distinct().OrderBy(name=>int.Parse(name)).ToList();
+            //options.UserFilter = (from place in places select place.UserID).Distinct().OrderBy(name=>int.Parse(name)).ToList();
             //MessageBox.Show(placesOfInterest.Count.ToString());
 
             markers = new GMapOverlay("markers");
@@ -105,7 +105,7 @@ namespace LocationPlotter
 
         private void filterMarkersOnToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FilterForm = new FilterForm(places: CustomPlaces, parent: this, options: options);
+            if (FilterForm == null) FilterForm = new FilterForm(parent: this, options: options);
             FilterForm.Show();
         }
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -123,7 +123,7 @@ namespace LocationPlotter
         }
         public async void RefreshMarkers()
         {
-            markers.Clear();
+            markers.Markers.Clear();
             places = await GetPlacesOfInterest();
             
             CustomPlaces = (from place in places
@@ -131,7 +131,7 @@ namespace LocationPlotter
                                   place.Created_At >= options.CreatedMin && place.Created_At <= options.CreatedMax
                                   select place).ToList();
             if(options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
-
+            Console.WriteLine("inspect");
             foreach (var place in CustomPlaces)
             {
                 var marker = new GMarkerGoogle(
