@@ -1,5 +1,3 @@
-using System.Net; //http client to get json string from kens website
-using Newtonsoft.Json.Serialization; //get json out of string from http client
 using Newtonsoft.Json.Linq; // get objects from json
 using GMap.NET;
 using GMap.NET.WindowsForms;
@@ -26,8 +24,6 @@ namespace LocationPlotter
         {
             InitializeComponent();
         }
-
-
 
         private async void Form1_Load(object sender, EventArgs e)
         {
@@ -79,7 +75,7 @@ namespace LocationPlotter
             RefreshMarkers();
             myMap.ContextMenuStrip = contextMenuStrip;
         }
-        private async Task<List<InterestingPlace>> GetPlacesOfInterest(int minid = 0, int maxid = 0, int limit = 0)
+        private async Task<List<InterestingPlace>> GetPlacesOfInterest()
         {
             string url = @"http://developer.kensnz.com/getlocdata";
             string newjson = string.Empty;
