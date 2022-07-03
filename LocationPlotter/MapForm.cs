@@ -157,13 +157,18 @@ namespace LocationPlotter
             if (options.UniqueResults) CustomPlaces = CustomPlaces.Distinct().ToList();
             RefreshTable(CustomPlaces);
 
-            int tempUserId;
+            int tempUserId = 0;
             GMarkerGoogleType gMarker = (GMarkerGoogleType)1;
-            foreach (var place in CustomPlaces.OrderByDescending(p=>p.UserID).ToList())
+            foreach (var place in CustomPlaces.OrderBy(p=>p.UserID).ToList())
             {
+                if (tempUserId != place.UserID)
+                {
+                    tempUserId = place.UserID;
+                    gMarker++;
+                }
                 var marker = new GMarkerGoogle(
                     new PointLatLng(place.Latitude, place.Longitude),
-                    GMarkerGoogleType.blue_pushpin)
+                    gMarker)
                 {
                     ToolTipText = place.ToString(),
                     Tag = place

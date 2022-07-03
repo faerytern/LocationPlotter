@@ -44,7 +44,7 @@
         }
         public override int GetHashCode()
         {
-            return (UserID * Latitude).ToString("5F").GetHashCode() * (UserID * Longitude).ToString("5F").GetHashCode();
+            return (UserID + Latitude + Longitude).ToString("5F").GetHashCode();
         }
     }
 }
