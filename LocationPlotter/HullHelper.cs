@@ -23,7 +23,7 @@ namespace LocationPlotter
             {
                 hull.Add(points[0]);
                 points.RemoveAt(0);
-                if (!Validate(hull))
+                while (!Validate(hull))
                 {
                     hull.RemoveAt(hull.Count - 2);
                 }
@@ -54,22 +54,7 @@ namespace LocationPlotter
             public int Compare(PointLatLng a, PointLatLng b)
             {
                 double cmp = -GetSignedArea(Pivot,a,b);
-                
                 return cmp > 0 ? 1 : cmp < 0 ? -1 : 0;
-                /*
-                if (cmp == 0)
-                {
-                    if (DistanceBetweenTwo(Pivot, a) > DistanceBetweenTwo(Pivot, b)) return 1;
-                    else return -1;
-                }
-                return 0;
-                */
-                //return cmp > 0 ? 1 : cmp < 0 ? -1 : 0;
-            }
-
-            private double DistanceBetweenTwo(PointLatLng a, PointLatLng b)
-            {
-                return (a.Lng - b.Lng) * (a.Lng - b.Lng) + (a.Lat - b.Lat) * (a.Lat - b.Lat);
             }
         }
     }

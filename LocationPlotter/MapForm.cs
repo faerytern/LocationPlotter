@@ -24,6 +24,7 @@ namespace LocationPlotter
         public System.Data.DataTable table = new System.Data.DataTable();
         double currentLongitude;
         double currentLatitude;
+        Random random = new Random();
         public MapForm()
         {
             InitializeComponent();
@@ -172,12 +173,11 @@ namespace LocationPlotter
                     // Create a dictionary entry for them to keep track of their points so we can make hulls out of them later.
                     PlacesByPeople.Add(tempUserId, new List<PointLatLng>());
                 }
+
                 var point = new PointLatLng(place.Latitude, place.Longitude);
-                var marker = new GMarkerGoogle(point, gMarker)
-                {
-                    ToolTipText = place.ToString(),
-                    Tag = place
-                };
+                if (gMarker == GMarkerGoogleType.white_small) gMarker = GMarkerGoogleType.arrow;
+                var marker = new GMarkerGoogle(point, gMarker);
+                marker.ToolTipText = place.ToString();
                 // Put the marker on the map
                 markers.Markers.Add(marker);
                 // Put the point of the marker in the dictionary
@@ -194,14 +194,15 @@ namespace LocationPlotter
                 if (keyvaluepair.Value.Count > 1)
                 {
                     var hull = HullHelper.CalculateHull(keyvaluepair.Value);
-                    for (int i = 0; i < hull.Count; i++)
-                    {
-                        PointLatLng item = hull[i];
-                        markers.Markers.Add(new GMarkerGoogle(new PointLatLng(item.Lat - .00005, item.Lng - .00005), GMarkerGoogleType.purple_dot) { ToolTipText=$"I am point {i}"});
-                    }
+                    // Debug hulls by generating a similar point beside them named with what order in the list it is
+                    //for (int i = 0; i < hull.Count; i++)
+                    //{
+                    //    PointLatLng item = hull[i];
+                    //    markers.Markers.Add(new GMarkerGoogle(new PointLatLng(item.Lat - .00005, item.Lng - .00005), GMarkerGoogleType.purple_dot) { ToolTipText=$"I am point {i}"});
+                    //}
 
                     GMapPolygon polygon = new GMapPolygon(hull, keyvaluepair.Key.ToString());
-                    polygon.Stroke = Pens.OrangeRed;
+                    polygon.Stroke = new Pen(Color.FromArgb(random.Next(0,255),random.Next(0, 255),random.Next(0, 255)));
                     markers.Polygons.Add(polygon);
                 }
             }

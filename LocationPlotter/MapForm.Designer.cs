@@ -67,7 +67,7 @@
             this.myMap.ScaleMode = GMap.NET.WindowsForms.ScaleModes.Integer;
             this.myMap.SelectedAreaFillColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(65)))), ((int)(((byte)(105)))), ((int)(((byte)(225)))));
             this.myMap.ShowTileGridLines = false;
-            this.myMap.Size = new System.Drawing.Size(800, 450);
+            this.myMap.Size = new System.Drawing.Size(784, 761);
             this.myMap.TabIndex = 0;
             this.myMap.Zoom = 0D;
             this.myMap.Load += new System.EventHandler(this.myMap_Load);
@@ -156,7 +156,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(784, 761);
             this.Controls.Add(this.myMap);
             this.HelpButton = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
