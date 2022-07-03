@@ -15,6 +15,7 @@ namespace LocationPlotter
             var pivot = points.Aggregate((a, b) => a.Lng < b.Lng ? a : a.Lng == b.Lng && a.Lat < b.Lat ? a : b);
             points.Remove(pivot);
             points.Sort(new RadialSorter(pivot));
+            //points.Reverse();
             var hull = new List<PointLatLng>() { pivot, points[0] };
             points.RemoveAt(0);
 
@@ -33,7 +34,7 @@ namespace LocationPlotter
         private static bool Validate(List<PointLatLng> hull)
         {
             return hull.Count < 3 ||
-                -GetSignedArea(hull[hull.Count - 3], hull[hull.Count - 2], hull[hull.Count - 1]) > 0;
+                GetSignedArea(hull[hull.Count - 3], hull[hull.Count - 2], hull[hull.Count - 1]) > 0;
         }
 
         private static double GetSignedArea(PointLatLng a, PointLatLng b, PointLatLng c)
@@ -54,13 +55,15 @@ namespace LocationPlotter
             {
                 double cmp = -GetSignedArea(Pivot,a,b);
                 
+                return cmp > 0 ? 1 : cmp < 0 ? -1 : 0;
+                /*
                 if (cmp == 0)
                 {
-                    if (DistanceBetweenTwo(Pivot, a) > DistanceBetweenTwo(Pivot, b)) return -1;
-                    else return 1;
+                    if (DistanceBetweenTwo(Pivot, a) > DistanceBetweenTwo(Pivot, b)) return 1;
+                    else return -1;
                 }
                 return 0;
-                
+                */
                 //return cmp > 0 ? 1 : cmp < 0 ? -1 : 0;
             }
 

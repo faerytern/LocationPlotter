@@ -20,7 +20,7 @@ namespace LocationPlotter
         SubmitMarkerForm secret;
         // Filter Arguments for places list
         public InterestingPlaceOptions options = new();
-        private bool doRepeat = true;
+        private bool doRepeat = false;
         public System.Data.DataTable table = new System.Data.DataTable();
         double currentLongitude;
         double currentLatitude;
@@ -152,7 +152,7 @@ namespace LocationPlotter
                             select place).OrderByDescending(p => p.Created_At).ToList();
             // Conditional Filtering
             if (options.LimitResults > 0) CustomPlaces = CustomPlaces.Take(options.LimitResults).ToList();
-            if (options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
+            if (options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).Where(p=>options.UserFilter.Contains( p.UserID)).ToList();
             if (options.UniqueResults) CustomPlaces = CustomPlaces.Distinct().ToList();
             RefreshTable(CustomPlaces);
 
@@ -188,6 +188,7 @@ namespace LocationPlotter
 
         private void DrawHulls(Dictionary<int, List<PointLatLng>> placesByPeople)
         {
+            markers.Polygons.Clear();
             foreach (var keyvaluepair in placesByPeople)
             {
                 if (keyvaluepair.Value.Count > 1)
