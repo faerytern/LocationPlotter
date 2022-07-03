@@ -71,6 +71,7 @@
             this.myMap.TabIndex = 0;
             this.myMap.Zoom = 0D;
             this.myMap.Load += new System.EventHandler(this.myMap_Load);
+            this.myMap.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.myMap_MouseDoubleClick);
             this.myMap.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MyMap_MouseMove);
             // 
             // contextMenuStrip
@@ -161,6 +162,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MapForm";
             this.Text = "Map Plotter";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MapForm_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);

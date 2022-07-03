@@ -2,11 +2,15 @@ using Newtonsoft.Json.Linq; // get objects from json
 using GMap.NET;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
+using System.Text;
+
 namespace LocationPlotter
 {
     public partial class MapForm : Form
     {
         public string title = "Map Plotter";
+        string url = @"http://developer.kensnz.com/getlocdata";
+        HttpClient client = new HttpClient();
         public List<InterestingPlace> places;
         public List<InterestingPlace> CustomPlaces;
         GMapOverlay markers;
@@ -14,9 +18,10 @@ namespace LocationPlotter
         public string json = string.Empty;
         PeriodicTimer timer;
         FilterForm FilterForm;
+        SubmitMarkerForm secret;
         // Filter Arguments for places list
         public InterestingPlaceOptions options = new();
-        private bool doRepeat;
+        private bool doRepeat = true;
         public System.Data.DataTable table = new System.Data.DataTable();
         double currentLongitude;
         double currentLatitude;
@@ -74,17 +79,11 @@ namespace LocationPlotter
         }
         private async Task<List<InterestingPlace>> GetPlacesOfInterest()
         {
-           
             string newjson = string.Empty;
-          
-            using (HttpClient client = new HttpClient())
-            {
-                string url = @"http://developer.kensnz.com/getlocdata";
-                newjson = await client.GetStringAsync(url);
-                if (json.Length == newjson.Length) return places; // if no change, dont reprocess
-                json = newjson;
-            }
-            JArray jerry = JArray.Parse(json);
+            newjson = await client.GetStringAsync(url);
+            if (json.Length == newjson.Length) return places; // if no change, dont reprocess
+            else json = newjson;
+            JArray jerry = JArray.Parse(newjson);
             var interestingPlaces = jerry.Select(p => new InterestingPlace
             {
                 ID = (int)p["id"],
@@ -105,9 +104,10 @@ namespace LocationPlotter
                 caption: "Help for Map Plotter 1.0",
                 text: "IT722 Project 2022\n" +
                 "Author: Kara Heffernan, 2016012187\n" +
-                "Purpose\n" +
-                "To map coordinates from multiple people sourced from a web server, draw convex hulls.\n" +
-                "Actions and filtering are done through the right-click context menu anywhere on the form.\n",
+                "Controls\n" +
+                "Left-click drag on the map will pan the map, scrolling zooms the map in and out.\n" +
+                "Actions and filtering are done through the right-click context menu anywhere on the form.\n" +
+                "Middle Click submits a point ;)",
                 icon: MessageBoxIcon.Question,
                 buttons: MessageBoxButtons.OK
                 );
@@ -131,7 +131,11 @@ namespace LocationPlotter
                 "Author: Kara Heffernan, 2016012187\n" +
                 "Purpose\n" +
                 "To map coordinates from multiple people sourced from a web server, draw convex hulls.\n" +
-                "Actions and filtering are done through the right-click context menu anywhere on the form.\n",
+                "Technologies used:\n" +
+                ".NET 6, Windows Forms, Visual Studio 2022\n" +
+                "Nuget Packages used:\n" +
+                "Newtonsoft.JSON\n" +
+                "GMap.NET.WinForms",
                 icon: MessageBoxIcon.Question,
                 buttons: MessageBoxButtons.OK
                 );
@@ -146,14 +150,16 @@ namespace LocationPlotter
                             place.Created_At >= options.CreatedMin && place.Created_At <= options.CreatedMax &&
                             place.Latitude >= options.LatMin && place.Latitude <= options.LatMax &&
                             place.Longitude >= options.LongMin && place.Longitude <= options.LongMax
-
                             select place).OrderByDescending(p => p.Created_At).ToList();
+            // Conditional Filtering
             if (options.LimitResults > 0) CustomPlaces = CustomPlaces.Take(options.LimitResults).ToList();
             if (options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
             if (options.UniqueResults) CustomPlaces = CustomPlaces.Distinct().ToList();
             RefreshTable(CustomPlaces);
 
-            foreach (var place in CustomPlaces)
+            int tempUserId;
+            GMarkerGoogleType gMarker = (GMarkerGoogleType)1;
+            foreach (var place in CustomPlaces.OrderByDescending(p=>p.UserID).ToList())
             {
                 var marker = new GMarkerGoogle(
                     new PointLatLng(place.Latitude, place.Longitude),
@@ -210,61 +216,23 @@ namespace LocationPlotter
             if (FilterForm != null && !FilterForm.IsDisposed) { FilterForm.options = options; FilterForm.RefreshPropertyGrid(); }
             RefreshMarkers();
         }
-    }
-    public class InterestingPlace :IEquatable<InterestingPlace>
-    {
-        public int ID { get; set; }
-        public int UserID { get; set; }
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public DateTime Created_At { get; set; }
-        public DateTime Updated_At { get; set; }
-        public override string ToString()
+
+        private async void myMap_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            return $"\nMark {ID} from Student {UserID}\nCreated on {Created_At.ToString("g")}\n{Description}";
-        }
-        public override bool Equals(object? obj)
-        {
-            if (obj is not null && obj is InterestingPlace place)
+            if (e.Button == MouseButtons.Middle)
             {
-                return UserID == place.UserID
-                    && Latitude.ToString("3F") == place.Latitude.ToString("3F")
-                    && Longitude.ToString("3F") == place.Longitude.ToString("3F");
-                //Tostrings to try address precision issues of floating point doublies
+
+                if(secret ==null) secret =new SubmitMarkerForm(client: client);
+                secret.SetLatLog(lat: currentLatitude, log: currentLongitude);
+                secret.ShowDialog();
             }
-            else return false;
         }
 
-        public bool Equals(InterestingPlace? other)
+        private void MapForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (other is not null)
-            {
-                return UserID == other.UserID
-                    && Latitude.ToString("3F") == other.Latitude.ToString("3F")
-                    && Longitude.ToString("3F") == other.Longitude.ToString("3F");
-                //Tostrings to try address precision issues of floating point doublies
-            }
-            else return false;
+            timer.Dispose();
+            client.CancelPendingRequests();
+            client.Dispose();
         }
-
-        public override int GetHashCode()
-        {
-            return (UserID ^ (Latitude.ToString("3F").GetHashCode() * Longitude.ToString("3F").GetHashCode()));
-        }
-    }
-    public class InterestingPlaceOptions
-    {
-        public int LimitResults { get; set; }
-        public int IDMin { get; set; }
-        public int IDMax { get; set; } = int.MaxValue;
-        public List<int> UserFilter { get; set; } = new List<int>();
-        public double LatMin { get; set; } = -90;
-        public double LatMax { get; set; } = 90;
-        public double LongMin { get; set; } = -180;
-        public double LongMax { get; set; } = 180;
-        public DateTime CreatedMin { get; set; } = DateTime.Parse("2022-01-01");
-        public DateTime CreatedMax { get; set; } = DateTime.Today.AddDays(2);
-        public bool UniqueResults { get; set; } = true;
     }
 }
