@@ -40,9 +40,9 @@ namespace LocationPlotter
         private static double GetSignedArea(PointLatLng a, PointLatLng b, PointLatLng c)
         {
             return 
-                a.Lat * b.Lng - b.Lat * a.Lng + 
-                b.Lat * c.Lng - c.Lat * b.Lng +
-                c.Lat * a.Lng - a.Lat * c.Lng;
+                a.Lng * b.Lat - b.Lng * a.Lat + 
+                b.Lng * c.Lat - c.Lng * b.Lat +
+                c.Lng * a.Lat - a.Lng * c.Lat;
         }
         private class RadialSorter : IComparer<PointLatLng>
         {
