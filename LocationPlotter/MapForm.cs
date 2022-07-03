@@ -29,10 +29,7 @@ namespace LocationPlotter
         {
             SetUpTable();
 
-
             await Task.Run(() => Repeater());
-            myMap.MouseMove += MyMap_MouseMove;
-
         }
 
         private void MyMap_MouseMove(object? sender, MouseEventArgs e)
@@ -77,23 +74,21 @@ namespace LocationPlotter
         }
         private async Task<List<InterestingPlace>> GetPlacesOfInterest()
         {
-            string url = @"http://developer.kensnz.com/getlocdata";
+           
             string newjson = string.Empty;
-            while (newjson == null || newjson == string.Empty)
+          
+            using (HttpClient client = new HttpClient())
             {
-                using (HttpClient client = new HttpClient())
-                {
-                    newjson = await client.GetStringAsync(url);
-                }
+                string url = @"http://developer.kensnz.com/getlocdata";
+                newjson = await client.GetStringAsync(url);
+                if (json.Length == newjson.Length) return places; // if no change, dont reprocess
+                json = newjson;
             }
-
-            if (json.Length == newjson.Length) return places; // if no change, dont reprocess
-            json = newjson;
             JArray jerry = JArray.Parse(json);
             var interestingPlaces = jerry.Select(p => new InterestingPlace
             {
                 ID = (int)p["id"],
-                UserID = (string)p["userid"] ?? string.Empty,
+                UserID = (int)p["userid"],
                 Latitude = (double)p["latitude"],
                 Longitude = (double)p["longitude"],
                 Description = (string)p["description"] ?? string.Empty,
@@ -125,7 +120,7 @@ namespace LocationPlotter
 
         private void filterMarkersOnToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (FilterForm == null||FilterForm.IsDisposed) FilterForm = new FilterForm(this);
+            if (FilterForm == null || FilterForm.IsDisposed) FilterForm = new FilterForm(this);
             FilterForm.Show();
         }
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -152,7 +147,7 @@ namespace LocationPlotter
                             place.Latitude >= options.LatMin && place.Latitude <= options.LatMax &&
                             place.Longitude >= options.LongMin && place.Longitude <= options.LongMax
 
-                            select place).OrderByDescending(p=>p.Created_At).ToList();
+                            select place).OrderByDescending(p => p.Created_At).ToList();
             if (options.LimitResults > 0) CustomPlaces = CustomPlaces.Take(options.LimitResults).ToList();
             if (options.UserFilter.Count > 0) CustomPlaces = CustomPlaces.Select(p => p).TakeWhile(p => options.UserFilter.Contains(p.UserID)).ToList();
             if (options.UniqueResults) CustomPlaces = CustomPlaces.Distinct().ToList();
@@ -188,7 +183,7 @@ namespace LocationPlotter
                 else
                 {
                     places = newplaces;
-                    
+
                     RefreshMarkers();
                 }
             }
@@ -200,18 +195,15 @@ namespace LocationPlotter
         {
             Clipboard.SetText($"{currentLatitude:F10}, {currentLongitude:F10}");
         }
-
         private void resetToStandardZoomToolStripMenuItem_Click(object sender, EventArgs e)
         {
             myMap.Zoom = 13;
         }
-
         private void ResetToDefaultViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             myMap.SetPositionByKeywords("Invercargill, Southland, New Zealand");
             myMap.Zoom = 13;
         }
-
         private void resetSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             options = new InterestingPlaceOptions();
@@ -219,10 +211,10 @@ namespace LocationPlotter
             RefreshMarkers();
         }
     }
-    public class InterestingPlace
+    public class InterestingPlace :IEquatable<InterestingPlace>
     {
         public int ID { get; set; }
-        public string UserID { get; set; } = string.Empty;
+        public int UserID { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string Description { get; set; } = string.Empty;
@@ -237,25 +229,41 @@ namespace LocationPlotter
             if (obj is not null && obj is InterestingPlace place)
             {
                 return UserID == place.UserID
-                    && Latitude == place.Latitude
-                    && Longitude == place.Longitude;
+                    && Latitude.ToString("3F") == place.Latitude.ToString("3F")
+                    && Longitude.ToString("3F") == place.Longitude.ToString("3F");
+                //Tostrings to try address precision issues of floating point doublies
             }
             else return false;
+        }
+
+        public bool Equals(InterestingPlace? other)
+        {
+            if (other is not null)
+            {
+                return UserID == other.UserID
+                    && Latitude.ToString("3F") == other.Latitude.ToString("3F")
+                    && Longitude.ToString("3F") == other.Longitude.ToString("3F");
+                //Tostrings to try address precision issues of floating point doublies
+            }
+            else return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return (UserID ^ (Latitude.ToString("3F").GetHashCode() * Longitude.ToString("3F").GetHashCode()));
         }
     }
     public class InterestingPlaceOptions
     {
-        
         public int LimitResults { get; set; }
         public int IDMin { get; set; }
         public int IDMax { get; set; } = int.MaxValue;
-        public List<string> UserFilter { get; set; } = new List<string>();
+        public List<int> UserFilter { get; set; } = new List<int>();
         public double LatMin { get; set; } = -90;
         public double LatMax { get; set; } = 90;
         public double LongMin { get; set; } = -180;
         public double LongMax { get; set; } = 180;
-
-        public DateTime CreatedMin { get; set; } = DateTime.Today.AddMonths(-14);
+        public DateTime CreatedMin { get; set; } = DateTime.Parse("2022-01-01");
         public DateTime CreatedMax { get; set; } = DateTime.Today.AddDays(2);
         public bool UniqueResults { get; set; } = true;
     }

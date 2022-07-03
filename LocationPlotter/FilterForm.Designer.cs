@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FilterForm));
             this.interestingPlaceBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
@@ -60,7 +61,6 @@
             this.propertyGrid1.Size = new System.Drawing.Size(260, 450);
             this.propertyGrid1.TabIndex = 0;
             this.propertyGrid1.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid1_PropertyValueChanged);
-            this.propertyGrid1.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.propertyGrid1_SelectedGridItemChanged);
             // 
             // dataGridView1
             // 
@@ -89,8 +89,6 @@
             this.dataGridView1.RowTemplate.Height = 25;
             this.dataGridView1.Size = new System.Drawing.Size(540, 450);
             this.dataGridView1.TabIndex = 1;
-            this.dataGridView1.Click += new System.EventHandler(this.dataGridView1_Click);
-            this.dataGridView1.DoubleClick += new System.EventHandler(this.dataGridView1_DoubleClick);
             // 
             // iDDataGridViewTextBoxColumn
             // 
@@ -148,10 +146,10 @@
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.propertyGrid1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FilterForm";
-            this.Text = "FilterForm";
+            this.Text = "Filter Locations on Attributes";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FilterForm_FormClosing);
-            this.Load += new System.EventHandler(this.FilterForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.interestingPlaceBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);

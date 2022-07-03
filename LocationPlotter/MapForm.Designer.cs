@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MapForm));
             this.myMap = new GMap.NET.WindowsForms.GMapControl();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyLocationToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -70,6 +71,7 @@
             this.myMap.TabIndex = 0;
             this.myMap.Zoom = 0D;
             this.myMap.Load += new System.EventHandler(this.myMap_Load);
+            this.myMap.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MyMap_MouseMove);
             // 
             // contextMenuStrip
             // 
@@ -156,6 +158,7 @@
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.myMap);
             this.HelpButton = true;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MapForm";
             this.Text = "Map Plotter";
             this.Load += new System.EventHandler(this.Form1_Load);

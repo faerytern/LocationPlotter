@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace LocationPlotter
+﻿namespace LocationPlotter
 {
     public partial class FilterForm : Form
     {
@@ -24,45 +14,24 @@ namespace LocationPlotter
         }
         public void RefreshPropertyGrid()
         {
+            // How I reset my options is hacky so I have to refresh/reset the propertygrid's selected object to keep references in sync. I really should just reset values to default instead of making a new obj but im lazy
             propertyGrid1.SelectedObject = options;
         }
-        
-        private void FilterForm_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void propertyGrid1_SelectedGridItemChanged(object sender, SelectedGridItemChangedEventArgs e)
-        {
-            
-        }
-
         private void propertyGrid1_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
             if (Tag is MapForm parent) parent.RefreshMarkers();
         }
-
-        private void dataGridView1_Click(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void dataGridView1_DoubleClick(object sender, EventArgs e)
-        {
-            
-        }
-
         private void FilterForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(e.CloseReason == CloseReason.UserClosing)
+            // Intercept Closing event
+            // Keep it open incase it helps ease loading the datagridview control
+            if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
                 Hide();
             }
-            else
-            {
-                e.Cancel = false;
-            }
+            // But only if the user closes it naturally. Otherwise, clean up properly.
+            else e.Cancel = false;
         }
     }
 }
