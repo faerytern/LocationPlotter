@@ -25,9 +25,8 @@
             if (obj is not null && obj is InterestingPlace place)
             {
                 return UserID == place.UserID
-                    && Latitude.ToString("5F") == place.Latitude.ToString("5F")
-                    && Longitude.ToString("5F") == place.Longitude.ToString("5F");
-                //Tostrings to try address precision issues of floating point doublies
+                    && Latitude == place.Latitude
+                    && Longitude == place.Longitude;
             }
             else return false;
         }
@@ -36,15 +35,14 @@
             if (other is not null)
             {
                 return UserID == other.UserID
-                    && Latitude.ToString("5F") == other.Latitude.ToString("5F")
-                    && Longitude.ToString("5F") == other.Longitude.ToString("5F");
-                // ToStrings to try address precision issues of floating point doublies
+                   && Latitude == other.Latitude
+                   && Longitude == other.Longitude;
             }
             else return false;
         }
         public override int GetHashCode()
         {
-            return (UserID + Latitude + Longitude).ToString("5F").GetHashCode();
+            return (UserID + Latitude + Longitude).ToString("6F").GetHashCode();
         }
     }
 }

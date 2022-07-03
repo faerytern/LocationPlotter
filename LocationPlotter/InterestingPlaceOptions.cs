@@ -17,6 +17,6 @@
         public double LongMax { get; set; } = 180;
         public DateTime CreatedMin { get; set; } = DateTime.Parse("2022-01-01");
         public DateTime CreatedMax { get; set; } = DateTime.Today.AddDays(2);
-        public bool UniqueResults { get; set; } = false;
+        public bool UniqueResults { get; set; } = true;
     }
 }

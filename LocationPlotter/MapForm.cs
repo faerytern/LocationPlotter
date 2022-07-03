@@ -14,7 +14,6 @@ namespace LocationPlotter
         public List<InterestingPlace> places;
         public List<InterestingPlace> CustomPlaces;
         GMapOverlay markers;
-        GMapOverlay polygons;
         public string json = string.Empty;
         PeriodicTimer timer;
         FilterForm FilterForm;
@@ -157,25 +156,58 @@ namespace LocationPlotter
             if (options.UniqueResults) CustomPlaces = CustomPlaces.Distinct().ToList();
             RefreshTable(CustomPlaces);
 
-            int tempUserId = 0;
+
+            int tempUserId = int.MinValue+3;
             GMarkerGoogleType gMarker = (GMarkerGoogleType)1;
+            Dictionary<int, List<PointLatLng>> PlacesByPeople = new Dictionary<int, List<PointLatLng>>();
             foreach (var place in CustomPlaces.OrderBy(p=>p.UserID).ToList())
             {
+                // If new person encountered
                 if (tempUserId != place.UserID)
                 {
+                    // Keep track of them
                     tempUserId = place.UserID;
+                    // Give them a new marker
                     gMarker++;
+                    // Create a dictionary entry for them to keep track of their points so we can make hulls out of them later.
+                    PlacesByPeople.Add(tempUserId, new List<PointLatLng>());
                 }
-                var marker = new GMarkerGoogle(
-                    new PointLatLng(place.Latitude, place.Longitude),
-                    gMarker)
+                var point = new PointLatLng(place.Latitude, place.Longitude);
+                var marker = new GMarkerGoogle(point, gMarker)
                 {
                     ToolTipText = place.ToString(),
                     Tag = place
                 };
+                // Put the marker on the map
                 markers.Markers.Add(marker);
+                // Put the point of the marker in the dictionary
+                PlacesByPeople[tempUserId].Add(point);
+            }
+            DrawHulls(PlacesByPeople);
+        }
+
+        private void DrawHulls(Dictionary<int, List<PointLatLng>> placesByPeople)
+        {
+            foreach (var keyvaluepair in placesByPeople)
+            {
+                if (keyvaluepair.Value.Count > 1)
+                {
+                    var hull = HullHelper.CalculateHull(keyvaluepair.Value);
+                    for (int i = 0; i < hull.Count; i++)
+                    {
+                        PointLatLng item = hull[i];
+                        markers.Markers.Add(new GMarkerGoogle(new PointLatLng(item.Lat - .00005, item.Lng - .00005), GMarkerGoogleType.purple_dot) { ToolTipText=$"I am point {i}"});
+                    }
+
+                    GMapPolygon polygon = new GMapPolygon(hull, keyvaluepair.Key.ToString());
+                    polygon.Stroke = Pens.OrangeRed;
+                    markers.Polygons.Add(polygon);
+                }
             }
         }
+
+        
+
         private void RefreshTable(List<InterestingPlace> interestingPlaces)
         {
             foreach (var p in interestingPlaces)
@@ -188,20 +220,23 @@ namespace LocationPlotter
             timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
             while (await timer.WaitForNextTickAsync())
             {
+                List<InterestingPlace> newplaces;
                 if (!doRepeat) continue;
-                var newplaces = await GetPlacesOfInterest();
-                if (places == newplaces) continue;
-                else
+                try
                 {
-                    places = newplaces;
-
-                    RefreshMarkers();
+                    newplaces = await GetPlacesOfInterest();
+                    if (places == newplaces) continue;
+                    else
+                    {
+                        places = newplaces;
+                        RefreshMarkers();
+                    }
+                }
+                catch (Exception)
+                {
                 }
             }
         }
-
-
-
         private void copyLocationToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Clipboard.SetText($"{currentLatitude:F10}, {currentLongitude:F10}");
