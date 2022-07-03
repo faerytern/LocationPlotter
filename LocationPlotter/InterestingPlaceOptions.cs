@@ -18,6 +18,6 @@
         public DateTime CreatedMin { get; set; } = DateTime.Parse("2022-01-01");
         public DateTime CreatedMax { get; set; } = DateTime.Today.AddDays(2);
         public bool UniqueResults { get; set; } = true;
-        public float PenWidth { get; set; } = 4;
+        public float PenWidth { get; set; } = 1;
     }
 }
