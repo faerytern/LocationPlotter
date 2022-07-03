@@ -202,7 +202,7 @@ namespace LocationPlotter
                     //}
 
                     GMapPolygon polygon = new GMapPolygon(hull, keyvaluepair.Key.ToString());
-                    polygon.Stroke = new Pen(Color.FromArgb(random.Next(0,255),random.Next(0, 255),random.Next(0, 255)));
+                    polygon.Stroke = new Pen(Color.FromArgb(random.Next(0,255),random.Next(0, 255),random.Next(0, 255)),options.PenWidth);
                     markers.Polygons.Add(polygon);
                 }
             }
