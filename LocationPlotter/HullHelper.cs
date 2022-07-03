@@ -41,7 +41,7 @@ namespace LocationPlotter
             return 
                 a.Lat * b.Lng - b.Lat * a.Lng + 
                 b.Lat * c.Lng - c.Lat * b.Lng +
-                c.Lat * a.Lng - a.Lat * b.Lng;
+                c.Lat * a.Lng - a.Lat * c.Lng;
         }
         private class RadialSorter : IComparer<PointLatLng>
         {
@@ -56,8 +56,8 @@ namespace LocationPlotter
                 
                 if (cmp == 0)
                 {
-                    if (DistanceBetweenTwo(Pivot, a) > DistanceBetweenTwo(Pivot, b)) return 1;
-                    else return -1;
+                    if (DistanceBetweenTwo(Pivot, a) > DistanceBetweenTwo(Pivot, b)) return -1;
+                    else return 1;
                 }
                 return 0;
                 
