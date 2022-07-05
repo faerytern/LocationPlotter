@@ -114,7 +114,7 @@ namespace LocationPlotter
                 );
         }
 
-        private async void refreshMarkersToolStripMenuItem_Click(object sender, EventArgs e)
+        private void refreshMarkersToolStripMenuItem_Click(object sender, EventArgs e)
         {
             RefreshMarkers();
         }
