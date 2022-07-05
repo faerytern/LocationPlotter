@@ -70,6 +70,8 @@
             this.myMap.Size = new System.Drawing.Size(784, 761);
             this.myMap.TabIndex = 0;
             this.myMap.Zoom = 0D;
+            this.myMap.OnPolygonClick += new GMap.NET.WindowsForms.PolygonClick(this.myMap_OnPolygonClick);
+            this.myMap.OnPolygonLeave += new GMap.NET.WindowsForms.PolygonLeave(this.myMap_OnPolygonLeave);
             this.myMap.Load += new System.EventHandler(this.myMap_Load);
             this.myMap.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.myMap_MouseDoubleClick);
             this.myMap.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MyMap_MouseMove);

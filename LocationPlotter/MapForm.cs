@@ -13,7 +13,8 @@ namespace LocationPlotter
         HttpClient client = new HttpClient();
         public List<InterestingPlace> places;
         public List<InterestingPlace> CustomPlaces;
-        GMapOverlay markers;
+        GMapOverlay overlay;
+
         public string json = string.Empty;
         PeriodicTimer timer;
         FilterForm FilterForm;
@@ -71,8 +72,8 @@ namespace LocationPlotter
 
             // Drawing Markers
 
-            markers = new GMapOverlay("markers");
-            myMap.Overlays.Add(markers);
+            overlay = new GMapOverlay("markers");
+            myMap.Overlays.Add(overlay);
 
             RefreshMarkers();
             myMap.ContextMenuStrip = contextMenuStrip;
@@ -142,7 +143,7 @@ namespace LocationPlotter
         }
         public async void RefreshMarkers()
         {
-            markers.Markers.Clear();
+            overlay.Markers.Clear();
             places = await GetPlacesOfInterest();
             table.Rows.Clear();
             CustomPlaces = (from place in places
@@ -179,7 +180,7 @@ namespace LocationPlotter
                 var marker = new GMarkerGoogle(point, gMarker);
                 marker.ToolTipText = place.ToString();
                 // Put the marker on the map
-                markers.Markers.Add(marker);
+                overlay.Markers.Add(marker);
                 // Put the point of the marker in the dictionary
                 PlacesByPeople[tempUserId].Add(point);
             }
@@ -188,7 +189,7 @@ namespace LocationPlotter
 
         private void DrawHulls(Dictionary<int, List<PointLatLng>> placesByPeople)
         {
-            markers.Polygons.Clear();
+            overlay.Polygons.Clear();
             foreach (var keyvaluepair in placesByPeople)
             {
                 if (keyvaluepair.Value.Count > 1)
@@ -203,12 +204,34 @@ namespace LocationPlotter
 
                     GMapPolygon polygon = new GMapPolygon(hull, keyvaluepair.Key.ToString());
                     polygon.Stroke = new Pen(Color.FromArgb(random.Next(0,255),random.Next(0, 255),random.Next(0, 255)),options.PenWidth);
-                    markers.Polygons.Add(polygon);
+                    polygon.Tag = GetAreaFromHull(hull);
+                    overlay.Polygons.Add(polygon);
                 }
             }
         }
 
-        
+        private double GetAreaFromHull(List<PointLatLng> hull)
+        {
+            static double ConvertToRadian(double input)
+            {
+                return input * Math.PI / 180;
+            }
+            double area = 0;
+
+            if (hull.Count > 2)
+            {
+                for (var i = 0; i < hull.Count - 1; i++)
+                {
+                    PointLatLng p1 = hull[i];
+                    PointLatLng p2 = hull[i + 1];
+                    area += ConvertToRadian(p2.Lng - p1.Lng) * (2 + Math.Sin(ConvertToRadian(p1.Lat)) + Math.Sin(ConvertToRadian(p2.Lat)));
+                }
+
+                area = area * 6378137 * 6378137 / 2;
+            }
+
+            return Math.Abs(area);
+        }
 
         private void RefreshTable(List<InterestingPlace> interestingPlaces)
         {
@@ -259,7 +282,7 @@ namespace LocationPlotter
             RefreshMarkers();
         }
 
-        private async void myMap_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void myMap_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Middle)
             {
@@ -275,6 +298,24 @@ namespace LocationPlotter
             timer.Dispose();
             client.CancelPendingRequests();
             client.Dispose();
+        }
+        
+        // Well, I tried to get info of a polygon working on click, and on leave, but no event seems to get triggered even though ive configured them to on the map control.
+        // Do I get marks for trying?
+        private void myMap_OnPolygonClick(GMapPolygon item, MouseEventArgs e)
+        {
+            if ((double)item.Tag == 0) 
+                MessageBox.Show($"Polygon has no area, it is a straight line. Its distance is {item.Distance}.");
+            else
+                MessageBox.Show($"Polygon area size is {item.Tag}, distance is {item.Distance}");
+        }
+
+        private void myMap_OnPolygonLeave(GMapPolygon item)
+        {
+            if ((double)item.Tag == 0)
+                MessageBox.Show($"Polygon has no area, it is a straight line. Its distance is {item.Distance}.");
+            else
+                MessageBox.Show($"Polygon area size is {item.Tag}, distance is {item.Distance}");
         }
     }
 }
